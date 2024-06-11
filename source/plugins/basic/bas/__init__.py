@@ -2,37 +2,47 @@ from .. import Data, to_basic, to_koi7, from_basic, from_koi7
 from pathlib import Path
 
 
+def get_line(line: str) -> bytes:
+    if "\"" in line:
+        a, b, c = line.split("\"", 2)
+        buf = to_koi7["\""].to_bytes(1)
+        for j in b.upper():
+            if j in to_koi7:
+                buf += to_koi7[j].to_bytes(1)
+        buf += to_koi7["\""].to_bytes(1)
+        return get_line(a) + buf + get_line(c)
+    for i in sorted(from_basic, key=len, reverse=True):
+        if i in line:
+            if i == "-":
+                index = line.index(i)
+                for j in line[index-1::-1]:
+                    if j in (" "):
+                        continue
+                    if j in ("=", ",", ";"):
+                        break
+                    a, b = line.split(i, 1)
+                    return get_line(a) + from_basic[i].to_bytes(1) + get_line(b)
+                continue
+            a, b = line.split(i, 1)
+            return get_line(a) + from_basic[i].to_bytes(1) + get_line(b)
+    buf = b""
+    for c in line.upper():
+        if c in to_koi7:
+            buf += to_koi7[c].to_bytes(1)
+    return buf
+
+
 def input(input_path: Path) -> Data:
     obj = Data()
-
+    obj.name = b"\x00"
     with open(input_path, "r", encoding="utf-8") as f:
         for line in f.readlines():
             line = line.strip().upper()
             buf = ""
             line_number = 0
-            for i in line:
-                if i == " " and line_number == 0:
-                    line_number = int(buf)
-                    obj.lines[line_number] = b""
-                    buf = ""
-                elif i == " ":
-                    if buf in from_basic:
-                        obj.lines[line_number] += from_basic[buf].to_bytes(1)
-                    else:
-                        for j in buf:
-                            obj.lines[line_number] += to_koi7[j].to_bytes(1)
-                    obj.lines[line_number] += to_koi7[" "].to_bytes(1)
-                    buf = ""
-                else:
-                    buf += i
-                    if buf in from_basic:
-                        obj.lines[line_number] += from_basic[buf].to_bytes(1)
-                        buf = ""
-            if buf in from_basic:
-                obj.lines[line_number] += from_basic[buf].to_bytes(1)
-            else:
-                for j in buf:
-                    obj.lines[line_number] += to_koi7[j].to_bytes(1)
+            num, line = line.split(" ", 1)
+            line_number = int(num)
+            obj.lines[line_number] = get_line(line)
     return obj
 
 
