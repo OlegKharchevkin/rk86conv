@@ -5,8 +5,18 @@ from pathlib import Path
 def input(input_path: Path) -> Data:
     obj = Data()
     with open(input_path, "rb") as f:
-        f.read(3)
-        obj.name = f.read(1)
+        while f.read(1) != b"\xE6":
+            pass
+
+        f.read(4)
+        while (char := f.read(1)) != b"\x00":
+            obj.name += char
+        f.read(2)
+
+        while f.read(1) != b"\xE6":
+            pass
+        f.read(4)
+
         last = None
         while True:
             next = int.from_bytes(f.read(2), "little")
@@ -25,19 +35,27 @@ def input(input_path: Path) -> Data:
 
             f.read(1)
             last = next
-
+        summ = int.from_bytes(f.read(2), "little")
+        obj.calc_summ()
+        if obj.summ != summ:
+            raise ValueError(
+                f"Checksum does not match {hex(summ)[2:].upper():0>4} {hex(obj.summ)[2:].upper():0>4}")
     return obj
 
 
 def output(output_path: Path, obj: Data) -> None:
     with open(output_path, "wb") as f:
-        f.write(b"\xd3\xd3\xd3")
+        f.write(b"\xe6\xd3\xd3\xd3\xd3")
         f.write(obj.name)
-        addr = 1
+        f.write(b"\x00\x00\x00")
+        f.write(b"\x55" * 64)
+        f.write(b"\xe6\xd3\xd3\xd3")
+        addr = 0x2201
         for i in sorted(obj.lines.keys()):
+            f.write(b"\x00")
             addr += len(obj.lines[i]) + 5
             f.write(addr.to_bytes(2, "little"))
             f.write(i.to_bytes(2, "little"))
             f.write(obj.lines[i])
-            f.write(b"\x00")
-        f.write(b"\x00\x00\x00\x00\x00")
+        f.write(b"\x00\x00\x00")
+        f.write(obj.summ.to_bytes(2, "little"))

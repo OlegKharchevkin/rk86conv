@@ -34,7 +34,9 @@ def get_line(line: str) -> bytes:
 
 def input(input_path: Path) -> Data:
     obj = Data()
-    obj.name = b"\x00"
+    for c in input_path.name.upper():
+        if c in to_koi7:
+            obj.name += to_koi7[c].to_bytes(1)
     with open(input_path, "r", encoding="utf-8") as f:
         for line in f.readlines():
             line = line.strip().upper()
@@ -43,6 +45,7 @@ def input(input_path: Path) -> Data:
             num, line = line.split(" ", 1)
             line_number = int(num)
             obj.lines[line_number] = get_line(line)
+    obj.calc_summ()
     return obj
 
 
