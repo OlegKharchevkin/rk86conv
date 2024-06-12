@@ -4,9 +4,26 @@ class Data:
     summ = 0
 
     def calc_summ(self):
+        """
+        Calculate the checksum of the text attribute.
+
+        The checksum is the sum of all the bytes in the text attribute.
+        The result is taken modulo 2^16 (65536).
+
+        This function updates the summ attribute of the Data object.
+
+        Returns:
+            None
+        """
+        # Initialize the checksum to 0
         summ = 0
+
+        # Iterate over each byte in the text attribute
         for i in self.text:
+            # Add the current byte to the checksum
             summ += i
+
+        # Take the result modulo 2^16 (to ensure the checksum fits in 16 bits)
         self.summ = summ & 0xffff
 
 
