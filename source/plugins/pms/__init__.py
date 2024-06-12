@@ -2,18 +2,57 @@ class Data:
     lines = []
     summ = 0
 
-    def calc_summ(self):
-        summ = len(self)
-        for i in self.lines:
-            for j in i:
-                summ += j
+    def calc_summ(self) -> None:
+        """
+        Calculate the checksum of the data.
+
+        The checksum is the sum of all the bytes in the data, including the line lengths.
+        The result is taken modulo 2^16.
+
+        This function updates the 'summ' attribute of the Data object.
+
+        Args:
+            self (Data): The Data object.
+
+        Returns:
+            None
+        """
+        # Calculate the length of the data
+        length = len(self)
+
+        # Calculate the checksum of the data
+        summ = 0
+        for line in self.lines:
+            for byte in line:
+                summ += byte
+        summ += length
+
+        # Take the result modulo 2^16
         self.summ = summ & 0xffff
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """
+        Calculate the length of the Data object, including the line lengths and the length of the length bytes.
+
+        Returns:
+            int: The length of the Data object.
+        """
+        # Initialize the length variable
         length = 0
+
+        # Loop through all lines in the Data object
         for line in self.lines:
-            length += len(line) + 1
-        return length + 1
+            # Calculate the length of the line, including the length byte
+            line_length = len(line) + 1
+
+            # Add the length of the line to the total length
+            length += line_length
+
+        # Add the length of the length bytes to the total length
+        length += 1
+
+        # Return the total length
+        return length
 
 
 to_koi7 = {"▘": 0x01,

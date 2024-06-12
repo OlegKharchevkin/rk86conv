@@ -4,14 +4,38 @@ class Data:
     summ = 0
 
     def calc_summ(self):
+        """
+        Calculate the checksum of the Data object.
+
+        This function calculates the checksum of the Data object by iterating over
+        the lines and adding up the values of each byte. The checksum is stored in
+        the summ attribute of the Data object.
+
+        Returns:
+            None
+        """
+
+        # Initialize the checksum to 0
         summ = 0
+
+        # Initialize the address to 0x2201
         addr = 0x2201
+
+        # Iterate over the lines of the Data object
         for i in self.lines:
+
+            # Calculate the new address by adding the length of the line and 5
             addr += len(self.lines[i]) + 5
+
+            # Create a line by concatenating the address, line number, and line data
             line = addr.to_bytes(2, "little") + \
                 i.to_bytes(2, "little") + self.lines[i]
+
+            # Iterate over the bytes in the line and add them to the checksum
             for j in line:
                 summ += j
+
+        # Store the checksum as a 16-bit unsigned integer
         self.summ = summ & 0xffff
 
 
