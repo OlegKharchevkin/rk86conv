@@ -68,7 +68,7 @@ def gen_labels_step(labels: dict[str, int], label: str, line: list[str], addr: i
     return addr, label
 
 
-def gen_codes_step(labels: dict[str, int], lable: str, line: list[str], addr: int, data: bytes) -> tuple[int, dict[str, int], bytes]:
+def gen_codes_step(labels: dict[str, int], lable: str, line: list[str], addr: int, data: bytes) -> tuple[int, str, bytes]:
     """
     Generates codes for the given line of assembly code.
 
@@ -80,7 +80,7 @@ def gen_codes_step(labels: dict[str, int], lable: str, line: list[str], addr: in
         data (bytes): Current data.
 
     Returns:
-        tuple[int, dict[str, int], bytes]: Updated address, labels, and data.
+        tuple[int, str, bytes]: Updated address, label, and data.
     """
     line_str = " ".join(line)
 
